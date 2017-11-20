@@ -20,6 +20,7 @@ int operator_aritmetica(char temp);
 int operator_logicos(char temp);
 int operador_deli(char temp);
 int operador_deliLogico(char temp);
+int operador_deli_openClose(char temp, char  automa);
 char bufferW[100];
 int numWorldRes=0;
 int numWorldOperL=0;
@@ -45,19 +46,15 @@ int coprobarDir(){
 }
 
 int analizerFile(char *dirFile){
-    char ch, temp[40], arithmetic_operator[] = "+*/-", logic_operator[] = "=<>!    ";
     FILE *file_pointer;
-    int count, x = 0;
+
     file_pointer = fopen(dirFile,"r");
-    printf(dirFile);
     if(file_pointer == NULL) {
         printf("El archivo no pudo ser abierto.\n");
         exit(0);
+    } else{
+        automataIdenReser(dirFile);
     }
-    while((ch = fgetc(file_pointer)) != EOF) {
-        automataIdenReser(ch);
-    }
-    fclose(file_pointer);
     //getch();
     return 0;
 }
@@ -162,11 +159,13 @@ int automataIdenReser(char *dirFile){
                         c = fgetc(archivo);
 
                     }else if(puntero=='('){
-                        estado=0;
+                        temporalChar=puntero;
+                        estado=9;
                         c = fgetc(archivo);
 
                     }else if(puntero==')'){
-                        estado=0;
+                        temporalChar=puntero;
+                        estado=10;
                         c = fgetc(archivo);
 
                     } else if(puntero==';'){
@@ -263,6 +262,8 @@ int automataIdenReser(char *dirFile){
                             estado=0;
                         }else{
                             token=-1;
+                            printf(ANSI_COLOR_RED "Error: %s no es una palabra reservada.\n" ANSI_COLOR_RESET, buffer);
+                            estado=0;
                         }
                         c = fgetc(archivo);
                     } else {
@@ -311,10 +312,10 @@ int automataIdenReser(char *dirFile){
                     }
                     break;
                 case 9: //automata para abrir "("
-                    if (operador_deliLogico(puntero)) {
+                    if (operador_deli_openClose(puntero, '(')) {
                         printf("%c",temporalChar);
-                        printf("\nToken: 11\n\n");
-                        token=11;
+                        printf("\nToken: 14\n\n");
+                        token=14;
                         estado=0;
                         //c = fgetc(archivo);
                     } else {
@@ -323,9 +324,9 @@ int automataIdenReser(char *dirFile){
                     }
                     break;
                 case 10: //automata para abrir ")"
-                    if (operador_deliLogico(puntero)) {
+                    if (operador_deli_openClose(puntero, ')')) {
                         printf("%c",temporalChar);
-                        printf("\nToken: 11\n\n");
+                        printf("\nToken: 15\n\n");
                         token=11;
                         estado=0;
                         //c = fgetc(archivo);
@@ -435,15 +436,22 @@ int operador_deli(char temp) {
     }
     return (flag);
 }
-int operador_deliLogico(char temp) {
+int operador_deli_openClose(char temp, char automa) {
     char a[1];
     a[1]=temp;
     int count = 0, flag = 0;
-    if(isalpha(temp) || isalnum(temp)){
-        flag=1;
-    }else{
-        //char keywords[1][1] = {" ","="};
-        char *keywords=" =";
+    char *keywords="";
+    if(automa=='('){
+        if(isalpha(temp) || isalnum(temp)){
+            flag=1;
+        }
+        keywords=" ";
+    }else if(automa==')'){
+        if(isalpha(temp) || isalnum(temp)){
+            flag=0;
+        }
+        keywords="{ ;";
+    }
 
         for (int i = 0; i < 2; ++i) {
             if(*keywords== temp) {
@@ -453,9 +461,28 @@ int operador_deliLogico(char temp) {
             }
             keywords++;
         }
+    return (flag);
+}
+
+int operador_deliLogico(char temp) {
+    char a[1];     a[1]=temp;
+    int count = 0, flag = 0;
+    if(isalpha(temp) || isalnum(temp)){
+        flag=1;
+    }else{
+        //char keywords[1][1] = {" ","="};
+        char *keywords=" =";
+        for (int i = 0; i < 2; ++i) {
+            if(*keywords== temp) {
+                flag = 1;
+                //numWorldOperA++;
+                break;
+            }             keywords++;
+        }
     }
     return (flag);
 }
+
 int operator_aritmetica(char temp) {
     int  flag = 0;
     char *keywords="+-*/";
@@ -518,15 +545,6 @@ int variable_deli(char temp) {
 int isWorldR(int numero) {
     int count = 0, flag = 0;
 
-    int palabrasReser[10][3] = {1,2,5,6,7,8,17,18,19,20};
-
-    while(count <= 10) {
-        if(strcmp(palabrasReser[count], numero) == 0) {
-            flag = 1;
-            break;
-        }
-        count = count + 1;
-    }
     return (flag);
 }
 
@@ -560,7 +578,7 @@ int main( int argc, char *argv[] )  {
                 printf("Ingrese directorio completo del archivo: \n");
                 scanf("%s", &directorio);
 //                analizerFile(directorio);
-                automataIdenReser("/home/by-default/Documentos/gitProyect/automatasApp/archivo.txt");
+                analizerFile("/home/by-default/Documents/gitProyects/automatasApp/archivo.txt");
                 resultadosFinales();
                 break;
             case 2:
