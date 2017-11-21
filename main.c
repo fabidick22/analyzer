@@ -10,6 +10,16 @@
 #define ANSI_COLOR_MAGENTA "\x1b[35m"
 #define ANSI_COLOR_CYAN    "\x1b[36m"
 #define ANSI_COLOR_RESET   "\x1b[0m"
+
+//DELIMITADORES
+char *variable_deli_keywords="<>=+-*/;( =):,\"";
+char *operator_logicos_keywords="<>=";
+char *operator_aritmetica_keywords="+-*/";
+char keywordsRevers[13][12] = {"RETORNO", "INICIO", "FIN", "FUNCION", "IMPRIMIR", "RECOGER",
+                         "BOOLEAN", "CADENA", "SINO", "HASTA", "SI", "ENTERO",
+                         "PARA"};
+//DELIMITADORES
+
 int keyword_library(char temp[]);
 int keyword_deli(char temp);
 int variable_deli(char temp);
@@ -27,6 +37,9 @@ int numWorldOperL=0;
 int numWorldOperA=0;
 int identificadores=0;
 int numerTotal=0;
+int numError=0;
+char charError[1000];
+int lineError=1;
 
 int banner(){
     printf("\n");
@@ -39,10 +52,6 @@ int banner(){
     printf(ANSI_COLOR_GREEN "\t╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝╚══════╝╚═╝   ╚══════╝╚══════╝╚═╝  ╚═╝\n" ANSI_COLOR_RESET);
 
     printf(ANSI_COLOR_RED "\t\t\tby: Michael & Dickson"ANSI_COLOR_RESET "\n\n\n");
-}
-
-int coprobarDir(){
-
 }
 
 int analizerFile(char *dirFile){
@@ -202,6 +211,7 @@ int automataIdenReser(char *dirFile){
                     }
                     if (variable_deli(puntero)) {
                         printf(buffer);
+
                         printf("\nToken: 3\n");
                         token = 3;
                         identificadores++;
@@ -215,7 +225,10 @@ int automataIdenReser(char *dirFile){
                     } else {
                         estado = 0;
                         token = -1;
+                        printf(ANSI_COLOR_RED "Error en la línea %d: %s se he encontrado un error.\n" ANSI_COLOR_RESET, lineError, buffer);
+                        numError=numError+1;
                         c = fgetc(archivo);
+
                     }
 
                     break;
@@ -262,12 +275,15 @@ int automataIdenReser(char *dirFile){
                             estado=0;
                         }else{
                             token=-1;
-                            printf(ANSI_COLOR_RED "Error: %s no es una palabra reservada.\n" ANSI_COLOR_RESET, buffer);
+                            printf(ANSI_COLOR_RED "Error en la línea %d: %s No es palabra reservada.\n" ANSI_COLOR_RESET, lineError, buffer);
+                            numError=numError+1;
                             estado=0;
+
                         }
-                        c = fgetc(archivo);
+                        //c = fgetc(archivo);
                     } else {
                         token = -1;
+
                         c = fgetc(archivo);
                     }
                     break;
@@ -281,6 +297,8 @@ int automataIdenReser(char *dirFile){
                     } else {
                         token = -1;
                         c = fgetc(archivo);
+                        printf(ANSI_COLOR_RED "Error en la línea %d : %s verifique su operador aritmetico.\n" ANSI_COLOR_RESET,lineError, buffer);
+                        numError=numError+1;
                     }
                     break;
                 case 7: //automata para logicos
@@ -293,10 +311,12 @@ int automataIdenReser(char *dirFile){
                     } else {
                         token = -1;
                         c = fgetc(archivo);
+                        printf(ANSI_COLOR_RED "Error en la linea %d: mal escrito en el operador logico %s.\n" ANSI_COLOR_RESET, lineError, buffer);
+                        numError=numError+1;
                     }
                     break;
                 case 8: //automata para numeros
-                    if (isalnum(puntero)){
+                    if (isdigit(puntero)){
                         estado=8;
                     }
                     else if (variable_deli(puntero)) {
@@ -308,6 +328,8 @@ int automataIdenReser(char *dirFile){
                         //c = fgetc(archivo);
                     } else {
                         token = -1;
+                        printf(ANSI_COLOR_RED "Error linea %d: en la declaracion, verifique la expresion %s.\n" ANSI_COLOR_RESET, lineError, buffer);
+                        numError=numError+1;
                         c = fgetc(archivo);
                     }
                     break;
@@ -320,6 +342,8 @@ int automataIdenReser(char *dirFile){
                         //c = fgetc(archivo);
                     } else {
                         token = -1;
+                        printf(ANSI_COLOR_RED "Error linea %d verifique la expresión.\n" ANSI_COLOR_RESET, lineError,buffer);
+                        numError=numError+1;
                         c = fgetc(archivo);
                     }
                     break;
@@ -341,8 +365,9 @@ int automataIdenReser(char *dirFile){
                     break;
 
             }
-        }
 
+        }
+        lineError=lineError+1;
         c = fgetc(archivo);
 //        switch (token) {
 //            case 0:
@@ -421,7 +446,7 @@ int operador_deli(char temp) {
     char a[1];
     a[1]=temp;
     int count = 0, flag = 0;
-    if(isalpha(temp) || isalnum(temp)){
+    if(isalpha(temp) || isdigit(temp)){
         flag=1;
     }else{
         char keywords[1][1] = {" "};
@@ -445,7 +470,7 @@ int operador_deli_openClose(char temp, char automa) {
         if(isalpha(temp) || isalnum(temp)){
             flag=1;
         }
-        keywords=" ";
+        keywords="\" ";
     }else if(automa==')'){
         if(isalpha(temp) || isalnum(temp)){
             flag=0;
@@ -453,14 +478,14 @@ int operador_deli_openClose(char temp, char automa) {
         keywords="{ ;";
     }
 
-        for (int i = 0; i < 2; ++i) {
-            if(*keywords== temp) {
-                flag = 1;
-                //numWorldOperA++;
-                break;
-            }
-            keywords++;
+    for (int i = 0; i < 2; ++i) {
+        if(*keywords== temp) {
+            flag = 1;
+            //numWorldOperA++;
+            break;
         }
+        keywords++;
+    }
     return (flag);
 }
 
@@ -485,7 +510,7 @@ int operador_deliLogico(char temp) {
 
 int operator_aritmetica(char temp) {
     int  flag = 0;
-    char *keywords="+-*/";
+    char *keywords=operator_aritmetica_keywords;
 
     for (int i = 0; i < 4; ++i) {
         if(*keywords== temp) {
@@ -506,7 +531,7 @@ int operator_logicos(char temp) {
     if(isalpha(temp) && isupper(temp)){
         flag=1;
     }else{
-        char *keywords="<>=";
+        char *keywords=operator_logicos_keywords;
 
         for (int i = 0; i < 3; ++i) {
             if(*keywords== temp) {
@@ -524,21 +549,19 @@ int variable_deli(char temp) {
     char a[1];
     a[1]=temp;
     int count = 0, flag = 0;
-    if(isalpha(temp) && isupper(temp)){
-        flag=1;
-    }else{
-        //char keywords[12][1] = {"<", ">", "=","+", "-", "*", "/", ";", "(", " ", "=", ")", ":" };
-        char *keywords="<>=+-*/;( =):,\"";
 
-        for (int i = 0; i < 15; ++i) {
-            if(*keywords== temp) {
-                flag = 1;
-                //numWorldOperA++;
-                break;
-            }
-            keywords++;
+    //char keywords[12][1] = {"<", ">", "=","+", "-", "*", "/", ";", "(", " ", "=", ")", ":" };
+    char *keywords=variable_deli_keywords;
+
+    for (int i = 0; i < 15; ++i) {
+        if(*keywords== temp) {
+            flag = 1;
+            //numWorldOperA++;
+            break;
         }
+        keywords++;
     }
+
     return (flag);
 }
 
@@ -555,9 +578,27 @@ int resultadosFinales(){
     printf(ANSI_COLOR_YELLOW "\nTotal Operadores L.: %d\t" ANSI_COLOR_RESET,numWorldOperL);
     printf(ANSI_COLOR_YELLOW "\nTotal Identificadores: %d\t" ANSI_COLOR_RESET,identificadores);
     printf(ANSI_COLOR_YELLOW "\nTotal Numeros: %d\t" ANSI_COLOR_RESET,numerTotal);
+    printf(ANSI_COLOR_RED "\nTotal Errores: %d\t" ANSI_COLOR_RESET,numError);
+    //printf(ANSI_COLOR_RED "\nUltma línea con error: %d\t" ANSI_COLOR_RESET,lineError);
+
     printf(ANSI_COLOR_BLUE "\n\n##################################" ANSI_COLOR_RESET);
 }
 
+int presentarDatos(){
+    printf(ANSI_COLOR_YELLOW "\n\n\n\nDelimitadores para Identificadores.\n %s" ANSI_COLOR_RESET, variable_deli_keywords);
+    printf(ANSI_COLOR_YELLOW "\n\nOperadores Logicos.\n %s" ANSI_COLOR_RESET, operator_logicos_keywords);
+    printf(ANSI_COLOR_YELLOW "\n\nDelimitadores Aritmeticos.\n %s" ANSI_COLOR_RESET, operator_aritmetica_keywords);
+    printf(ANSI_COLOR_YELLOW "\n\nPalabras Rervadas. "ANSI_COLOR_RESET);
+    int count = 0, flag = 0;
+    char keywords[13][12] = {"RETORNO", "INICIO", "FIN", "FUNCION", "IMPRIMIR", "RECOGER",
+                             "BOOLEAN", "CADENA", "SINO", "HASTA", "SI", "ENTERO",
+                             "PARA"};
+
+    while(count <= 12) {
+        printf("\n%s\n",keywords[count]);
+        count = count + 1;
+    }
+}
 // FIN EDICION Michael
 int main( int argc, char *argv[] )  {
     banner();
@@ -567,18 +608,25 @@ int main( int argc, char *argv[] )  {
     char* texto;
     while(op!=4) {
         printf(ANSI_COLOR_CYAN "\n\n1.- Analizar Archivo\n" ANSI_COLOR_RESET);
-        printf(ANSI_COLOR_CYAN "2.- Analizar Texto\n" ANSI_COLOR_RESET);
+        printf(ANSI_COLOR_CYAN "2.- Analizar Texto (No desarrollado)\n" ANSI_COLOR_RESET);
         printf(ANSI_COLOR_CYAN "3.- Datos de Analizador\n" ANSI_COLOR_RESET);
         printf(ANSI_COLOR_CYAN "4.- Salir\n" ANSI_COLOR_RESET);
         printf(ANSI_COLOR_YELLOW "Indica la opcion: " ANSI_COLOR_RESET);
+
+
+
         scanf("%d", &op);
+
+
+
+
 
         switch(op) {
             case 1:
                 printf("Ingrese directorio completo del archivo: \n");
                 scanf("%s", &directorio);
 //                analizerFile(directorio);
-                analizerFile("/home/by-default/Documents/gitProyects/automatasApp/archivo.txt");
+                analizerFile("/home/by-default/Documentos/gitProyect/automatasApp/archivo.txt");
                 resultadosFinales();
                 break;
             case 2:
@@ -587,12 +635,14 @@ int main( int argc, char *argv[] )  {
                 printf(texto);
                 break;
             case 3:
-                printf("Datos: asdsa, \nasdsa, asdsa\n");
+                presentarDatos();
                 break;
             case 4:
                 break;
         }
     }
+
+
     return 0;
 }
 //autores: dickson y michaelju
