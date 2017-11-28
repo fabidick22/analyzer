@@ -1,5 +1,5 @@
-# analyzer
+## ANALYZER
 Analizador Lexico
 
-# STANDARD
+## STANDARD
 C99
