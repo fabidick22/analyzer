@@ -2,4 +2,4 @@
 Analizador Lexico
 
 ## STANDARD
-C99
+C99 (Tener encuenta antes de compilar)
