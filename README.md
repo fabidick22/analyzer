@@ -7,5 +7,5 @@ Ejemplo de compilación:
 ```console
 gcc -std=c99 -o outputfile sourcefile.c
 ```
-## Funcionamiento/Caracterisiticas
+## Funcionamiento/Caracteristicas
 Leer [Wiki](https://github.com/fabidick22/analyzer/wiki)
