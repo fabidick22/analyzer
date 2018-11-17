@@ -625,8 +625,7 @@ int main( int argc, char *argv[] )  {
             case 1:
                 printf("Ingrese directorio completo del archivo: \n");
                 scanf("%s", &directorio);
-//                analizerFile(directorio);
-                analizerFile("/home/by-default/Documentos/gitProyect/automatasApp/archivo.txt");
+                analizerFile(directorio);
                 resultadosFinales();
                 break;
             case 2:
