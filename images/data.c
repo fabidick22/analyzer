@@ -90,7 +90,7 @@ char * quitDeli(char temp[]){
 }
 
 int fun(){
-    FILE* archivo = fopen("/home/by-default/Documents/gitProyects/automatasApp/archivo.txt","r");
+    FILE* archivo = fopen("/home/exploit/Documentos/archivo.txt","r");
     char * buffer = NULL;
     int i, c;
     c = fgetc(archivo);
@@ -741,7 +741,7 @@ char ir_a(char sP, char A){
     options[12][0] = "11", options[12][1] = "", options[12][2] = "", options[12][3] = "";
 
     for (int i = 0; i < anchura; ++i) {
-        char *columna=options[0][i];55 i 6 + 8 E 4 (
+        char *columna=options[0][i];
         char valorM=*columna;
         if(valorM==A){
             columanSimbolo=i;
@@ -750,7 +750,7 @@ char ir_a(char sP, char A){
         if(i>=anchura){
             columanSimbolo=0;
             break;
-        }55 i 6 + 8 E 4 (
+        }
     }
     for (int j = 0; j < altura; ++j) {
         char *columna=options[j][0];
